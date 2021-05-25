@@ -49,7 +49,7 @@ qplot(data = mpg, x = drv, y = hwy, geom = "boxplot", colour = drv)
 
 #-------------------------------------------------------------------------------
 
-#연습 1-1
+#연습1-1
 #1-1-1
 score <- c(80, 60, 70, 50, 90)
 score
@@ -83,3 +83,72 @@ df_midterm_2 <- data.frame(english = c(90, 80, 60, 70),
                            math = c(50, 60, 100, 20),
                            class = c(1, 1, 2, 2))
 df_midterm_2
+
+#-------------------------------------------------------------------------------
+
+#연습1-2
+#1-2-1
+df_sales <- data.frame(fruit = c("사과", "딸기", "수박"),
+                       price = c(1800, 1500, 3000),
+                       volume = c(24, 38, 13))
+
+#1-2-2
+mean(df_sales$price) # 과일 가격 평균
+mean(df_sales$volume) # 판매량 평균
+
+
+#-------------------------------------------------------------------------------
+
+#실행1_7
+# 엑셀 파일 불러오기
+# readxl 패키지 설치 및 로드
+install.packages("readxl")
+library(readxl)
+# 엑셀파일 불러오기 (경로 지정 필요)
+df_exam <- read_excel("D:/R_programming/chap1_excel_data.xlsx")
+df_exam
+mean(df_exam$mid)
+mean(df_exam$final)
+# 엑셀 파일에 시트가 여러 개인 경우
+df_exam_2 <- read_excel("D:/R_programming/chap1_excel_data.xlsx", sheet = 3)
+df_exam_2
+# 엑셀 파일 첫 번째 행이 변수명이 아닌경우
+df_exam_3 <- read_excel("D:/R_programming/chap1_excel_data.xlsx", col_names = F,
+                        sheet = 2)
+df_exam_3
+
+#-------------------------------------------------------------------------------
+
+#실행1_8
+# csv 파일 불러오기
+df_exam_csv <- read.csv("D:/R_programming/chap1_csv_data.csv")
+# Mac 한글data 오류 시 read.csv("chap1_csv_data.csv",fileEncoding = "euc-kr")로 수정
+# 데이터 프레임을 CSV 파일로 저장하기
+df_midterm <- data.frame(english = c(90, 80, 60, 70),
+                         math = c(50, 60, 100, 20),
+                         class = c(1, 1, 2, 2))
+df_midterm
+write.csv(df_midterm, file = "df_midterm.csv")
+write.csv(df_midterm, file = "D:/R_programming/df_midterm.csv")
+
+#-------------------------------------------------------------------------------
+
+#실행1_9
+# RData 파일 활용하기
+# 데이터 프레임을 RData 파일로 저장하기 (프레임명까지 저장됨)
+save(df_midterm, file = "test_df_midterm.rda")
+# RData 불러오기
+load("test_df_midterm.rda")
+df_midterm
+
+#-------------------------------------------------------------------------------
+#연습1-3
+#1-3-1
+df_ex3_sheet1 <- read_excel("chap1_ex3_data.xlsx", sheet = 1)
+df_ex3_sheet1
+df_ex3_sheet2 <- read_excel("chap1_ex3_data.xlsx", sheet = 2)
+df_ex3_sheet2
+
+#1-3-2
+write.csv(df_ex3_sheet1, file = "df_ex3_sheet1.csv")
+save(df_ex3_sheet2, file = "df_ex3_sheet2.rda")
