@@ -1,3 +1,4 @@
+#프로젝트 폴더 = C:/R_programming
 #실행2_7
 library(ggplot2)
 mpg <- as.data.frame(ggplot2::mpg)
