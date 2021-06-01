@@ -1,0 +1,273 @@
+#실행2_7
+library(ggplot2)
+mpg <- as.data.frame(ggplot2::mpg)
+# qplot()의 사용
+qplot(data = mpg, x = hwy)
+# x 축 cty
+qplot(data = mpg, x = cty)
+# x 축 drv
+qplot(data = mpg, x = drv)
+# x 축 drv, y 축 hwy
+qplot(data = mpg, x = drv, y = hwy)
+# x 축 drv, y 축 hwy, 상자 그림 형태
+qplot(data = mpg, x = drv, y = hwy, geom = "boxplot")
+# x 축 drv, y 축 hwy, 상자 그림 형태, drv 별 색 표현
+qplot(data = mpg, x = drv, y = hwy, geom = "boxplot", colour = drv)
+
+
+#-------------------------------------------------------------------------------
+
+
+#실행2_8
+# 빈도 막대 그래프 만들기 - ggplot() / geom_bar()
+# x 축 범주 변수, y 축 빈도
+ggplot(data = mpg, aes(x = drv)) + geom_bar()
+# x 축 연속 변수, y 축 빈도
+ggplot(data = mpg, aes(x = hwy)) + geom_bar()
+
+
+#-------------------------------------------------------------------------------
+
+
+#실행2_9
+# 평균 막대 그래프 만들기 ??? ggplot() / geom_col()
+# 1. 집단별 평균표 만들기
+library(dplyr)
+df_mpg <- mpg %>%
+  group_by(drv) %>%
+  summarise(mean_hwy = mean(hwy))
+df_mpg
+# 2. 그래프 생성하기
+ggplot(data = df_mpg, aes(x = drv, y = mean_hwy)) + geom_col() 
+# 각 집단의 평균값을 막대 길이로 표현한 그래프
+# 3. 크기 순으로 정렬하기
+ggplot(data = df_mpg, aes(x = reorder(drv, -mean_hwy), y = mean_hwy)) +
+  geom_col()
+
+
+#-------------------------------------------------------------------------------
+
+
+#실행2_10
+# 상자그림 만들기
+ggplot(data = mpg, aes(y = hwy)) + geom_boxplot()
+# 집단별 상자그림 비교하기
+ggplot(data = mpg, aes(x = drv, y = hwy)) + geom_boxplot()
+
+
+#-------------------------------------------------------------------------------
+
+
+#연습2_6
+#2-6-1
+df <- mpg %>%
+  filter(class == "suv") %>%
+  group_by(manufacturer) %>%
+  summarise(mean_cty = mean(cty)) %>%
+  arrange(desc(mean_cty)) %>%
+  head(5)
+
+df
+
+ggplot(data = df, aes(x = manufacturer, y = mean_cty)) + geom_col()
+
+#2-6-2
+ggplot(data = mpg, aes(x = class)) + geom_bar()
+
+#2-6-3
+class_mpg <- mpg %>%
+  filter(class %in% c("compact", "subcompact", "suv"))
+ggplot(data = class_mpg, aes(x = class, y = cty)) + geom_boxplot()
+
+#-------------------------------------------------------------------------------
+
+
+#실행3_1
+#단일표본T검정
+
+# 데이터 준비
+exam <- read.csv("chap2_csv_data.csv")
+library(dplyr)
+# 데이터 파악하기
+str(exam) # 데이터 속성 확인
+#자료의 수가 작고(<30) 모집단의 분포가 정규분포가 아니라면 비모수적 검정방법 사용
+
+#분석준비
+#정규성검정(H0:모집단의 분포가 정규분포 vs H1:모집단 분포가 정규분포라 할 수 없다)
+shapiro.test(exam$math)
+mean(exam$math)
+# One Sample t-test
+t.test(exam$math, mu = 60, alternative = "two.sided")
+t.test(exam$math, mu = 60, alternative = "less")
+t.test(exam$math, mu = 60, alternative = "greater")
+
+
+#--------------------------------------------------------------------------------
+
+
+#실행3_2 
+#독립표본T검정
+
+#분석준비
+class(exam$class)
+table(exam$class)
+
+exam_2samt <- exam %>%
+  mutate(class_g = ifelse(class %in% c(1, 2, 3), "A", "B"))
+exam_2samt
+class(exam_2samt$class_g)
+#분산의 동질성 검정: Levene's test
+#패키지설치
+#install.packages("lawstat")
+library(lawstat)
+#levene의 등분산검정(H0:두 집단의 분산이 같다 vs H1:두 집단은 분산이 다르다)
+levene.test(exam_2samt$math, exam_2samt$class_g, location="mean")
+# Two Sample t-test
+t.test(data = exam_2samt, math ~ class_g, var.equal = T)
+
+
+#--------------------------------------------------------------------------------
+
+
+#실행3_3
+#대응표본T검정
+
+#분석준비
+math<- exam$math
+english<- exam$english
+# Paired t-test
+t.test(math, english, paired = T)
+
+
+#--------------------------------------------------------------------------------
+
+
+
+#연습3_1
+
+#3-1-1
+mpg <- as.data.frame(ggplot2::mpg)
+library(dplyr)
+
+str(mpg)
+table(mpg$class)
+
+t.test(mpg$cty, mu=20, alternative = "two.sided")
+
+#3-1-2
+mpg_diff <- mpg %>%
+  select(class, cty) %>%
+  filter(class %in% c("compact", "suv"))
+
+str(mpg_diff)
+class(mpg_diff$class)
+
+table(mpg_diff$class)
+
+#분산의 동질성 검정 : levene's test
+
+#install.packages("lawstat")
+library(lawstat)
+
+levene.test(mpg_diff$cty, mpg_diff$class, location = "mean")
+
+t.test(data = mpg_diff, cty ~ class, var.equal = T)
+
+
+#3-1-3
+#Paired t-test
+cty <- mpg$cty
+hwy <- mpg$hwy
+
+t.test(cty, hwy, paired = T, alternative = "greater")
+
+
+#-------------------------------------------------------------------------------
+
+
+#실행3_4
+#데이터 준비
+exam_p <- exam %>%
+  mutate(math_g = ifelse(math>=80, "A",ifelse(math>=60, "B", "C")))
+table(exam_p$math_g)
+#Goodness of Fit test
+chisq.test(table(exam_p$math_g), p=c(1/4, 2/4, 1/4))
+
+
+#-------------------------------------------------------------------------------
+
+
+#실행3_5
+#데이터 준비
+exam_c <- exam %>%
+  mutate(math_g = ifelse(math>=80, "A",ifelse(math>=60, "B", "C")),
+         english_g = ifelse(english>=70, "A", "B"))
+table(exam_c$math_g, exam_c$english_g)
+#Chi square test of independence
+chisq.test(table(exam_c$math_g, exam_c$english_g))
+
+
+#-------------------------------------------------------------------------------
+
+
+#실행3_6
+#데이터 준비
+p_table = data.frame(black=20, silver=20, gold=35, pink=25, row.names="")
+#Goodness of Fit test
+chisq.test(p_table, p=c(1/4, 1/4, 1/4, 1/4))
+
+
+#-------------------------------------------------------------------------------
+
+
+#실행3_7
+#데이터 준비
+c_table = data.frame(A=c(27, 77, 17), B=c(7, 53, 20), row.names=c("20", "30", "40"))
+c_table
+#Chi square test of independence
+chisq.test(c_table)
+
+
+#-------------------------------------------------------------------------------
+
+
+#연습3_2
+#3-2-1
+?mpg
+mpg <- as.data.frame(ggplot2::mpg)
+str(mpg)
+mean(mpg$hwy)
+
+quantile(mpg$hwy, p=0.1)
+quantile(mpg$hwy, p=0.25)
+quantile(mpg$hwy, p=0.5)
+quantile(mpg$hwy, p=0.75)
+quantile(mpg$hwy, p=0.9)
+
+median(mpg$hwy)
+min(mpg$hwy)
+max(mpg$hwy)
+
+
+mpg_chi1 <- mpg %>%
+  mutate(hwy_g = ifelse(hwy <= 20, "A", ifelse(hwy <= 30, "B", "C")))
+
+table(mpg_chi1$hwy_g)
+
+
+chisq.test(table(mpg_chi1$hwy_g), p=c(2/7, 4/7, 1/7))
+
+#3-2-2
+
+mpg_chi2 <- mpg %>%
+  mutate(hwy_g = ifelse(hwy <= 20, "A", ifelse(hwy <=20, "B", "C"))) %>% filter(class %in% c("compact", "midsize", "subcompact") & hwy_g != "A")
+
+table(mpg_chi2$class, mpg_chi2$hwy_g)
+
+chisq.test(table(mpg_chi2$class, mpg_chi2$hwy_g))
+
+#3-2-3
+c_table = data.frame(o=c(93, 55), c=c(72, 79), x=c(21,30), row.names=c("m", "f"))
+
+c_table
+chisq.test(c_table)
